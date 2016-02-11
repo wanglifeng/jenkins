@@ -35,7 +35,6 @@ import hudson.Indenter;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.labels.LabelAtomPropertyDescriptor;
-import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.search.CollectionSearchIndex;
@@ -481,6 +480,11 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return filterQueue(Arrays.asList(Jenkins.getInstance().getQueue().getItems()));
     }
 
+    /**
+     * @deprecated Use {@link #getQueueItems()}. As of 1.607 the approximation is no longer needed.
+     * @return The items in the queue.
+     */
+    @Deprecated
     public List<Queue.Item> getApproximateQueueItemsQuickly() {
         return filterQueue(Jenkins.getInstance().getQueue().getApproximateItemsQuickly());
     }
@@ -1158,18 +1162,22 @@ public abstract class View extends AbstractModelObject implements AccessControll
     
     public static View create(StaplerRequest req, StaplerResponse rsp, ViewGroup owner)
             throws FormException, IOException, ServletException {
+        String mode = req.getParameter("mode");
+
         String requestContentType = req.getContentType();
-        if(requestContentType==null)
+        if (requestContentType == null
+                && !(mode != null && mode.equals("copy")))
             throw new Failure("No Content-Type header set");
 
-        boolean isXmlSubmission = requestContentType.startsWith("application/xml") || requestContentType.startsWith("text/xml");
+        boolean isXmlSubmission = requestContentType != null
+                && (requestContentType.startsWith("application/xml")
+                        || requestContentType.startsWith("text/xml"));
 
         String name = req.getParameter("name");
         checkGoodName(name);
         if(owner.getView(name)!=null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
-        String mode = req.getParameter("mode");
         if (mode==null || mode.length()==0) {
             if(isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());

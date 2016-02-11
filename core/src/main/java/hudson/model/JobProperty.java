@@ -25,7 +25,6 @@ package hudson.model;
 
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.Plugin;
 import hudson.model.Descriptor.FormException;
 import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
@@ -43,11 +42,13 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
 
+import javax.annotation.Nonnull;
+
 /**
  * Extensible property of {@link Job}.
  *
  * <p>
- * {@link Plugin}s can extend this to define custom properties
+ * Plugins can extend this to define custom properties
  * for {@link Job}s. {@link JobProperty}s show up in the user
  * configuration screen, and they are persisted with the job object.
  *
@@ -133,6 +134,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
      * @see ProminentProjectAction
      * @see PermalinkProjectAction
      */
+    @Nonnull
     public Collection<? extends Action> getJobActions(J job) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getJobAction(job);
@@ -171,6 +173,7 @@ public abstract class JobProperty<J extends Job<?,?>> implements ReconfigurableD
         return getJobAction((J)project);
     }
 
+    @Nonnull
     public final Collection<? extends Action> getProjectActions(AbstractProject<?,?> project) {
         return getJobActions((J)project);
     }
